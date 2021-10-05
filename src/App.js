@@ -150,6 +150,31 @@ const App = () => {
 
   }
 
+  const changeNetwork = async () => {
+
+    const { ethereum } = window;
+
+    try {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x4' }],
+      });
+    } catch (switchError) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0x4', rpcUrl: 'https://rinkeby-light.eth.linkpool.io/' /* ... */ }],
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+      // handle other "switch" errors
+    }
+  }
+
   useEffect(() => {
     async function getChainId() {
       const ethChainId = await window.ethereum.request({ method: 'eth_chainId' })
@@ -188,6 +213,11 @@ const App = () => {
           <div className="bio">
           You are not connected to Rinkeby network. Please change the
           network you are connected to in your wallet.
+            <div>
+             <button className="waveButton" onClick={changeNetwork}>
+             Change to Rinkeby
+            </button>
+            </div>
         </div>
         )}
               
