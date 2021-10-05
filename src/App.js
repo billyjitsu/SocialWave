@@ -5,12 +5,15 @@ import waveJSON from './utils/WavePortal.json';
 
 const App = () => {
 
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const contractAddress = "0x1969a74eC7d83Be12425c7380750eeA9BeD82841";
   const contractABI = waveJSON.abi;
+  
 
   const [currentAccount, setCurrentAccount] = useState("");
   const [allWaves, setAllWaves] = useState([]);
   const [message, setMessage] = useState("");
+  const [chainId, setChainId] = useState(window.ethereum.request({ method: 'eth_chainId' }));
+
 
   const checkIfWalletConnected = async () => {
     try {
@@ -28,7 +31,11 @@ const App = () => {
         */
         const accounts = await ethereum.request({ method: 'eth_accounts' });
         //check network?
-        const provider = ethers.getDefaultProvider();
+        //find this chain id
+        const chain = await window.ethereum.request({method: 'eth_chainId'});
+        //chainId = chain;
+        console.log("chain ID:", chain)
+        console.log("global Chain Id:", chainId)
 
         if (accounts.length !== 0) {
             const account = accounts[0];
@@ -52,8 +59,7 @@ const App = () => {
         return;
       }
 
-      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });     
 
       console.log("Connected", accounts[0]);
       setCurrentAccount(accounts[0]); 
@@ -144,6 +150,15 @@ const App = () => {
 
   }
 
+  useEffect(() => {
+    async function getChainId() {
+      const ethChainId = await window.ethereum.request({ method: 'eth_chainId' })
+      setChainId(ethChainId)
+    }
+  
+    getChainId()
+  }, [])
+
   useEffect ( () => {
     checkIfWalletConnected();
   }, [])
@@ -153,12 +168,13 @@ const App = () => {
 
       <div className="dataContainer">
         <div className="header">
-        👋 Hey there!
+        👋 What's Up!
         </div>
 
         <div className="bio">
         Send me a message! Connect your Ethereum wallet and wave at me!
         </div>
+        <p className="bio">(15 minute wait time between messages)</p>
 
         <button className="waveButton" onClick={wave}>
           Wave at Me
@@ -167,12 +183,20 @@ const App = () => {
                onChange={e => setMessage(e.target.value)}
                placeholder="Leave a message"
              ></input>
+        
+        { chainId === '0x4' ? null :(  
+          <div className="bio">
+          You are not connected to Rinkeby network. Please change the
+          network you are connected to in your wallet.
+        </div>
+        )}
+              
 
         {!currentAccount && (
           <button className="waveButton" onClick={connectWallet}>
             Connect Wallet
           </button>
-        )}
+        )}              
 
         {allWaves.map((wave, index) => {
           return(
